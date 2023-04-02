@@ -43,6 +43,8 @@ from ..utils.parallel import delayed, Parallel
 from ..metrics._scorer import _check_multimetric_scoring, get_scorer_names
 from ..metrics import check_scoring
 
+from tqdm.auto import tqdm
+
 __all__ = ["GridSearchCV", "ParameterGrid", "ParameterSampler", "RandomizedSearchCV"]
 
 
@@ -851,9 +853,10 @@ class BaseSearchCV(MetaEstimatorMixin, BaseEstimator, metaclass=ABCMeta):
                         candidate_progress=(cand_idx, n_candidates),
                         **fit_and_score_kwargs,
                     )
-                    for (cand_idx, parameters), (split_idx, (train, test)) in product(
-                        enumerate(candidate_params), enumerate(cv.split(X, y, groups))
-                    )
+                    for (cand_idx, parameters), (split_idx, (train, test)) in 
+                    tqdm(product(enumerate(candidate_params), enumerate(cv.split(X, y, groups))), 
+                         disable=not self.verbose,
+                         total=n_candidates * n_splits)
                 )
 
                 if len(out) < 1:
